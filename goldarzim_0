@@ -1,0 +1,1193 @@
+=====[ settings.gradle.kts ]=====
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "goldarzim_0"
+include(":app")
+
+
+=====[ build.gradle.kts ]=====
+plugins {
+    id("com.android.application") version "8.5.2" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+}
+
+
+=====[ gradle.properties ]=====
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+org.gradle.parallel=true
+org.gradle.caching=true
+android.useAndroidX=true
+android.nonTransitiveRClass=true
+kotlin.code.style=official
+
+
+=====[ app/build.gradle.kts ]=====
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.goldarzim.panel"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.goldarzim.panel"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    buildTypes {
+        debug {
+            isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    lint {
+        abortOnError = false
+    }
+}
+
+dependencies {}
+
+
+=====[ app/proguard-rules.pro ]=====
+-keep class com.goldarzim.panel.** { *; }
+-keepclassmembers class com.goldarzim.panel.MainActivity$Bridge {
+    public *;
+}
+
+
+=====[ app/src/main/AndroidManifest.xml ]=====
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode|smallestScreenSize|density"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="sensorLandscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="overlay_crosshair_and_gesture_injection" />
+        </service>
+
+        <service
+            android:name=".TrickService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/trick_service" />
+        </service>
+
+    </application>
+</manifest>
+
+
+=====[ app/src/main/res/values/strings.xml ]=====
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">goldarzim_0</string>
+    <string name="acc_desc">Injeta o headtrick (arrasto) no botao de tiro usando gestos de acessibilidade. Sem root e sem injector.</string>
+</resources>
+
+
+=====[ app/src/main/res/xml/trick_service.xml ]=====
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canPerformGestures="true"
+    android:canRetrieveWindowContent="false"
+    android:description="@string/acc_desc"
+    android:notificationTimeout="100" />
+
+
+=====[ app/src/main/res/drawable/ic_launcher.xml ]=====
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#0B0D11"
+        android:pathData="M0,0h108v108h-108z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00FF5A"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M54,24 L54,84" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00FF5A"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M24,54 L84,54" />
+    <path
+        android:fillColor="#FF2D2D"
+        android:pathData="M54,50 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+</vector>
+
+
+=====[ app/src/main/java/com/goldarzim/panel/Engine.kt ]=====
+package com.goldarzim.panel
+
+import android.graphics.Color
+
+object Cfg {
+    @Volatile var overlayOn = false
+    @Volatile var cor = Color.rgb(0, 255, 90)
+    @Volatile var esp = 2
+    @Volatile var off = 2f
+    @Volatile var tam = 8f
+
+    @Volatile var trick = false
+    @Volatile var dy = 140f
+    @Volatile var ms = 80L
+    @Volatile var hw = 280f
+    @Volatile var hh = 300f
+    @Volatile var hx = 0
+    @Volatile var hy = 0
+    @Volatile var pos = false
+    @Volatile var calib = false
+}
+
+
+=====[ app/src/main/java/com/goldarzim/panel/TrickService.kt ]=====
+package com.goldarzim.panel
+
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
+import android.graphics.Path
+import android.view.accessibility.AccessibilityEvent
+
+class TrickService : AccessibilityService() {
+
+    override fun onServiceConnected() {
+        inst = this
+    }
+
+    override fun onAccessibilityEvent(e: AccessibilityEvent?) {}
+
+    override fun onInterrupt() {}
+
+    override fun onDestroy() {
+        if (inst === this) inst = null
+        super.onDestroy()
+    }
+
+    fun trick(x: Float, y: Float, dy: Float, ms: Long, done: () -> Unit) {
+        val path = Path()
+        path.moveTo(x, y)
+        path.lineTo(x, y - dy)
+
+        val dur = ms.coerceIn(20L, 600L)
+        val g = GestureDescription.Builder()
+            .addStroke(GestureDescription.StrokeDescription(path, 0L, dur))
+            .build()
+
+        val cb = object : AccessibilityService.GestureResultCallback() {
+            override fun onCompleted(d: GestureDescription?) = done()
+            override fun onCancelled(d: GestureDescription?) = done()
+        }
+
+        val ok = try {
+            dispatchGesture(g, cb, null)
+        } catch (_: Throwable) {
+            false
+        }
+        if (!ok) done()
+    }
+
+    companion object {
+        @Volatile var inst: TrickService? = null
+    }
+}
+
+
+=====[ app/src/main/java/com/goldarzim/panel/OverlayService.kt ]=====
+package com.goldarzim.panel
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PixelFormat
+import android.os.Build
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+
+class OverlayService : Service() {
+
+    private var w: WindowManager? = null
+    private var cross: Cross? = null
+    private var hot: Hot? = null
+    private var hp: WindowManager.LayoutParams? = null
+    private var busy = false
+    private var fg = false
+
+    override fun onBind(i: Intent?): IBinder? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        w = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        loadCfg()
+    }
+
+    override fun onStartCommand(i: Intent?, f: Int, id: Int): Int {
+        startFg()
+        syncCross()
+        syncHot()
+        return START_STICKY
+    }
+
+    override fun onDestroy() {
+        saveCfg()
+        release()
+        super.onDestroy()
+    }
+
+    private fun release() {
+        try { cross?.let { w?.removeView(it) } } catch (_: Throwable) {}
+        try { hot?.let { w?.removeView(it) } } catch (_: Throwable) {}
+        cross = null
+        hot = null
+        hp = null
+    }
+
+    private fun loadCfg() {
+        val p = getSharedPreferences("g0", MODE_PRIVATE)
+        Cfg.hx = p.getInt("hx", 0)
+        Cfg.hy = p.getInt("hy", 0)
+        Cfg.pos = p.getBoolean("pos", false)
+    }
+
+    private fun saveCfg() {
+        getSharedPreferences("g0", MODE_PRIVATE).edit()
+            .putInt("hx", Cfg.hx)
+            .putInt("hy", Cfg.hy)
+            .putBoolean("pos", Cfg.pos)
+            .apply()
+    }
+
+    private fun startFg() {
+        if (Build.VERSION.SDK_INT < 26) return
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (nm.getNotificationChannel(CH) == null) {
+            nm.createNotificationChannel(
+                NotificationChannel(CH, "goldarzim_0", NotificationManager.IMPORTANCE_LOW)
+            )
+        }
+        val pi = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val n = Notification.Builder(this, CH)
+            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setContentTitle("goldarzim_0")
+            .setContentText("mira na tela ativa")
+            .setContentIntent(pi)
+            .setOngoing(true)
+            .build()
+        try {
+            if (!fg) {
+                startForeground(1, n)
+                fg = true
+            } else {
+                nm.notify(1, n)
+            }
+        } catch (_: Throwable) {}
+    }
+
+    private fun tipo(): Int =
+        if (Build.VERSION.SDK_INT >= 26) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
+
+    private fun syncCross() {
+        if (Cfg.overlayOn) {
+            if (cross == null) {
+                val v = Cross(this)
+                val lp = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    tipo(),
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSLUCENT
+                )
+                lp.gravity = Gravity.TOP or Gravity.START
+                try { w?.addView(v, lp) } catch (_: Throwable) {}
+                cross = v
+            } else {
+                cross?.invalidate()
+            }
+        } else {
+            try { cross?.let { w?.removeView(it) } } catch (_: Throwable) {}
+            cross = null
+        }
+    }
+
+    private fun syncHot() {
+        val dm = resources.displayMetrics
+        if (Cfg.trick || Cfg.calib) {
+            val bw = Cfg.hw.toInt().coerceAtLeast(60)
+            val bh = Cfg.hh.toInt().coerceAtLeast(60)
+
+            if (hot == null) {
+                val v = Hot(this)
+                val lp = WindowManager.LayoutParams(
+                    bw, bh, tipo(),
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    PixelFormat.TRANSLUCENT
+                )
+                lp.gravity = Gravity.TOP or Gravity.START
+
+                if (!Cfg.pos) {
+                    Cfg.hx = dm.widthPixels - bw - 30
+                    Cfg.hy = dm.heightPixels - bh - 30
+                    Cfg.pos = true
+                }
+                Cfg.hx = Cfg.hx.coerceIn(0, (dm.widthPixels - bw).coerceAtLeast(0))
+                Cfg.hy = Cfg.hy.coerceIn(0, (dm.heightPixels - bh).coerceAtLeast(0))
+                lp.x = Cfg.hx
+                lp.y = Cfg.hy
+
+                try { w?.addView(v, lp) } catch (_: Throwable) {}
+                hp = lp
+                hot = v
+            } else {
+                val lp = hp ?: return
+                lp.width = bw
+                lp.height = bh
+                Cfg.hx = Cfg.hx.coerceIn(0, (dm.widthPixels - bw).coerceAtLeast(0))
+                Cfg.hy = Cfg.hy.coerceIn(0, (dm.heightPixels - bh).coerceAtLeast(0))
+                lp.x = Cfg.hx
+                lp.y = Cfg.hy
+                try { hot?.let { w?.updateViewLayout(it, lp) } } catch (_: Throwable) {}
+                hot?.invalidate()
+            }
+            if (!busy) setTouchable(true)
+        } else {
+            try { hot?.let { w?.removeView(it) } } catch (_: Throwable) {}
+            hot = null
+            hp = null
+        }
+    }
+
+    fun moveHot() {
+        val lp = hp ?: return
+        lp.x = Cfg.hx
+        lp.y = Cfg.hy
+        try { hot?.let { w?.updateViewLayout(it, lp) } } catch (_: Throwable) {}
+    }
+
+    fun snapHot() {
+        val dm = resources.displayMetrics
+        val bw = Cfg.hw.toInt().coerceAtLeast(60)
+        val bh = Cfg.hh.toInt().coerceAtLeast(60)
+        Cfg.hx = Cfg.hx.coerceIn(0, (dm.widthPixels - bw).coerceAtLeast(0))
+        Cfg.hy = Cfg.hy.coerceIn(0, (dm.heightPixels - bh).coerceAtLeast(0))
+        Cfg.pos = true
+        saveCfg()
+        moveHot()
+    }
+
+    private fun setTouchable(t: Boolean) {
+        val lp = hp ?: return
+        lp.flags = if (t) lp.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        else lp.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        try { hot?.let { w?.updateViewLayout(it, lp) } } catch (_: Throwable) {}
+    }
+
+    private fun fire(x: Float, y: Float) {
+        if (busy) return
+        val ts = TrickService.inst ?: return
+        busy = true
+        setTouchable(false)
+        ts.trick(x, y, Cfg.dy, Cfg.ms) { done() }
+    }
+
+    private fun done() {
+        Handler(Looper.getMainLooper()).post {
+            busy = false
+            if (Cfg.trick || Cfg.calib) setTouchable(true)
+        }
+    }
+
+    inner class Cross(c: Context) : View(c) {
+        private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+        override fun onDraw(canvas: Canvas) {
+            if (!Cfg.overlayOn) return
+            val cx = width / 2f
+            val cy = height / 2f - height * (Cfg.off / 100f)
+            val len = Cfg.tam * 4f
+            val gap = Cfg.tam
+            p.color = Cfg.cor
+            p.style = Paint.Style.STROKE
+            p.strokeWidth = Cfg.esp.toFloat()
+            canvas.drawLine(cx - len, cy, cx - gap, cy, p)
+            canvas.drawLine(cx + gap, cy, cx + len, cy, p)
+            canvas.drawLine(cx, cy - len, cx, cy - gap, p)
+            canvas.drawLine(cx, cy + gap, cx, cy + len, p)
+            p.style = Paint.Style.FILL
+            canvas.drawCircle(cx, cy, (Cfg.tam * 0.45f).coerceAtLeast(1f), p)
+        }
+    }
+
+    inner class Hot(c: Context) : View(c) {
+        private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+        private var dragging = false
+        private var sx = 0f
+        private var sy = 0f
+        private var ox = 0f
+        private var oy = 0f
+
+        init { isClickable = true }
+
+        override fun onTouchEvent(e: MotionEvent): Boolean {
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    if (Cfg.calib) {
+                        dragging = true
+                        sx = e.rawX
+                        sy = e.rawY
+                        ox = Cfg.hx.toFloat()
+                        oy = Cfg.hy.toFloat()
+                    } else {
+                        fire(e.rawX, e.rawY)
+                    }
+                    invalidate()
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (dragging) {
+                        Cfg.hx = (ox + e.rawX - sx).toInt()
+                        Cfg.hy = (oy + e.rawY - sy).toInt()
+                        moveHot()
+                        invalidate()
+                    }
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (dragging) {
+                        dragging = false
+                        snapHot()
+                        invalidate()
+                    }
+                }
+            }
+            return true
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            if (!Cfg.calib) return
+            val wf = width.toFloat()
+            val hf = height.toFloat()
+            p.style = Paint.Style.FILL
+            p.color = 0x2200FF5A
+            canvas.drawRoundRect(0f, 0f, wf, hf, 20f, 20f, p)
+            p.style = Paint.Style.STROKE
+            p.strokeWidth = 3f
+            p.color = 0xFF00FF5A.toInt()
+            canvas.drawRoundRect(1.5f, 1.5f, wf - 1.5f, hf - 1.5f, 20f, 20f, p)
+            val cx = wf / 2f
+            val cy = hf / 2f
+            p.strokeWidth = 2f
+            canvas.drawLine(cx - 20f, cy, cx + 20f, cy, p)
+            canvas.drawLine(cx, cy - 20f, cx, cy + 20f, p)
+        }
+    }
+
+    companion object {
+        private const val CH = "g0"
+    }
+}
+
+
+=====[ app/src/main/java/com/goldarzim/panel/MainActivity.kt ]=====
+package com.goldarzim.panel
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.view.View
+import android.view.WindowManager
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+import java.io.File
+
+class MainActivity : Activity() {
+
+    private lateinit var web: WebView
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onCreate(s: Bundle?) {
+        super.onCreate(s)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        fullscreen()
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            try {
+                requestPermissions(arrayOf("android.permission.POST_NOTIFICATIONS"), 7)
+            } catch (_: Throwable) {}
+        }
+
+        web = WebView(this)
+        setContentView(web)
+
+        web.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            allowFileAccess = true
+            allowContentAccess = true
+            mediaPlaybackRequiresUserGesture = false
+            textZoom = 100
+        }
+        web.setBackgroundColor(0xFF0B0D11.toInt())
+        web.isVerticalScrollBarEnabled = false
+        web.isHorizontalScrollBarEnabled = false
+        web.overScrollMode = View.OVER_SCROLL_NEVER
+        web.webViewClient = WebViewClient()
+        web.addJavascriptInterface(Bridge(), "gold")
+        web.loadUrl("file:///android_asset/index.html")
+
+        if (!canOverlay()) askOverlay()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fullscreen()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun fullscreen() {
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+            View.SYSTEM_UI_FLAG_FULLSCREEN or
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    }
+
+    private fun canOverlay(): Boolean = try {
+        Settings.canDrawOverlays(this)
+    } catch (_: Throwable) {
+        false
+    }
+
+    private fun askOverlay() {
+        try {
+            startActivity(
+                Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+            )
+        } catch (_: Throwable) {
+            try {
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun accOn(): Boolean = try {
+        val s = Settings.Secure.getString(
+            contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: ""
+        s.contains(packageName) && s.contains("TrickService")
+    } catch (_: Throwable) {
+        false
+    }
+
+    private fun openAcc() {
+        try {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        } catch (_: Throwable) {
+            toast("Acessibilidade > goldarzim_0")
+        }
+    }
+
+    private fun start() {
+        val i = Intent(this, OverlayService::class.java)
+        try {
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i) else startService(i)
+        } catch (_: Throwable) {
+            try { startService(i) } catch (_: Throwable) {}
+        }
+    }
+
+    private fun stop() {
+        try { stopService(Intent(this, OverlayService::class.java)) } catch (_: Throwable) {}
+    }
+
+    private fun toast(m: String) {
+        try { Toast.makeText(this, m, Toast.LENGTH_SHORT).show() } catch (_: Throwable) {}
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+        if (web.canGoBack()) web.goBack() else moveTaskToBack(true)
+    }
+
+    inner class Bridge {
+
+        @JavascriptInterface
+        fun state(): String {
+            val o = if (canOverlay()) "1" else "0"
+            val a = if (accOn()) "1" else "0"
+            return "$o$a"
+        }
+
+        @JavascriptInterface
+        fun overlay(on: Boolean, cor: String, esp: Int, off: Float, tam: Int) {
+            runOnUiThread {
+                Cfg.overlayOn = on
+                Cfg.cor = try { Color.parseColor(cor) } catch (_: Throwable) { 0xFF00FF5A.toInt() }
+                Cfg.esp = esp.coerceIn(1, 12)
+                Cfg.off = off.coerceIn(-20f, 30f)
+                Cfg.tam = tam.toFloat().coerceIn(2f, 40f)
+                if (on || Cfg.trick || Cfg.calib) start() else stop()
+            }
+        }
+
+        @JavascriptInterface
+        fun trick(on: Boolean, dy: Float, ms: Int, w: Float, h: Float, calib: Boolean) {
+            runOnUiThread {
+                Cfg.trick = on
+                Cfg.calib = calib
+                Cfg.dy = dy.coerceIn(10f, 600f)
+                Cfg.ms = ms.toLong().coerceIn(20L, 600L)
+                Cfg.hw = w.coerceIn(60f, 900f)
+                Cfg.hh = h.coerceIn(60f, 900f)
+                if (on || calib || Cfg.overlayOn) start() else stop()
+            }
+        }
+
+        @JavascriptInterface
+        fun hide() {
+            runOnUiThread { moveTaskToBack(true) }
+        }
+
+        @JavascriptInterface
+        fun accSettings() {
+            runOnUiThread { openAcc() }
+        }
+
+        @JavascriptInterface
+        fun overlaySettings() {
+            runOnUiThread { askOverlay() }
+        }
+
+        @JavascriptInterface
+        fun copy(txt: String) {
+            runOnUiThread {
+                try {
+                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    cm.setPrimaryClip(ClipData.newPlainText("goldarzim_0", txt))
+                    toast("copiado")
+                } catch (_: Throwable) {
+                    toast("falha ao copiar")
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun save(nome: String, txt: String) {
+            try {
+                val dir = getExternalFilesDir(null) ?: filesDir
+                val f = File(dir, nome)
+                f.writeText(txt)
+                runOnUiThread { toast("salvo em " + f.absolutePath) }
+            } catch (e: Throwable) {
+                runOnUiThread { toast("falha: " + e.message) }
+            }
+        }
+    }
+}
+
+
+=====[ app/src/main/assets/index.html ]=====
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>goldarzim_0</title>
+<style>
+:root{
+  --bg:#0b0d11;--card:#12151b;--line:#242a36;--tx:#e8ecf3;--dim:#8b94a6;--ok:#00ff5a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);
+  font:14px/1.4 Roboto,-apple-system,"Segoe UI",sans-serif;
+  overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+#hd{position:sticky;top:0;z-index:9;display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
+  background:#0b0d11ee;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.5px;font-size:15px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:10px;letter-spacing:.6px;padding:4px 8px;border-radius:99px;
+  border:1px solid var(--line);color:var(--dim);background:#0f131a;font-weight:700}
+.pill.act{border-color:var(--ok);color:var(--ok)}
+#bd{padding:12px 12px 130px;display:flex;flex-direction:column;gap:12px;
+  max-width:760px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;
+  display:flex;flex-direction:column;gap:10px}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ch h2{margin:0;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+.tg{min-width:66px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);
+  background:#0f131a;color:var(--dim);font-weight:800;font-size:12px;letter-spacing:.5px}
+.tg.act{background:var(--ok);border-color:var(--ok);color:#04140a}
+.rw{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rw>span{font-size:12px;color:var(--dim)}
+.sw{display:flex;gap:8px}
+.sw i{width:26px;height:26px;border-radius:8px;border:2px solid #2b3240;display:block}
+.sw i.on{border-color:#fff}
+.sl{display:grid;grid-template-columns:96px 1fr 56px;align-items:center;gap:8px}
+.sl>span{font-size:12px;color:var(--dim)}
+.sl>b{font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;width:100%;height:26px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:#242a36}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-8px;
+  border-radius:50%;background:var(--ok);border:2px solid #0b0d11}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bt{padding:11px;border-radius:11px;border:1px solid var(--line);background:#0f131a;
+  color:var(--tx);font-weight:700;font-size:13px}
+.bt.act{border-color:var(--ok);color:var(--ok)}
+.bt.pri{background:var(--ok);border-color:var(--ok);color:#04140a}
+.dpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.hint{margin:0;font-size:11px;color:var(--dim);line-height:1.5}
+#ficha{margin:0;padding:10px;background:#0d1015;border:1px solid var(--line);border-radius:10px;
+  font:11px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#b9c3d4;
+  white-space:pre-wrap;word-break:break-word;max-height:190px;overflow:auto}
+#ft{position:fixed;left:0;right:0;bottom:0;z-index:9;display:grid;
+  grid-template-columns:1fr 1fr 1fr;gap:8px;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:#0b0d11f2;border-top:1px solid var(--line);max-width:760px;margin:0 auto}
+#toast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,14px);
+  background:#1a202b;border:1px solid var(--line);padding:9px 14px;border-radius:99px;
+  font-size:12px;font-weight:600;opacity:0;pointer-events:none;transition:.18s;z-index:20}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header id="hd">
+  <div class="brand"><span class="dot"></span>goldarzim_0</div>
+  <div class="pills">
+    <span class="pill" id="pX">XIT off</span>
+    <span class="pill" id="pA">A11Y ?</span>
+    <span class="pill" id="pO">OVL ?</span>
+  </div>
+</header>
+
+<main id="bd">
+
+  <section class="card">
+    <div class="ch"><h2>Mira</h2><button class="tg" id="bOv">off</button></div>
+    <div class="rw"><span>Cor</span><div class="sw" id="sw"></div></div>
+    <label class="sl"><span>Espessura</span><input type="range" id="sEsp" min="1" max="8" step="1"><b id="vEsp">2</b></label>
+    <label class="sl"><span>Offset</span><input type="range" id="sOff" min="-10" max="20" step="0.5"><b id="vOff">2.0</b></label>
+    <label class="sl"><span>Tamanho</span><input type="range" id="sTam" min="4" max="20" step="1"><b id="vTam">8</b></label>
+  </section>
+
+  <section class="card">
+    <div class="ch"><h2>Headtrick</h2><button class="tg" id="bTk">off</button></div>
+    <label class="sl"><span>Arrasto</span><input type="range" id="sDy" min="40" max="320" step="5"><b id="vDy">140px</b></label>
+    <label class="sl"><span>Duracao</span><input type="range" id="sMs" min="20" max="300" step="5"><b id="vMs">80ms</b></label>
+    <div class="grid2">
+      <label class="sl"><span>Caixa L</span><input type="range" id="sW" min="120" max="520" step="10"><b id="vW">280px</b></label>
+      <label class="sl"><span>Caixa A</span><input type="range" id="sH" min="120" max="520" step="10"><b id="vH">300px</b></label>
+    </div>
+    <button class="bt" id="bCal">Calibrar posicao</button>
+    <p class="hint">A caixa fica sobre o botao de tiro. Um toque = um tiro com arrasto ate a cabeca.
+    Com a acessibilidade desligada a caixa engole o toque.</p>
+  </section>
+
+  <section class="card">
+    <div class="ch"><h2>Sensi</h2><span class="pill">referencia</span></div>
+    <div id="ss"></div>
+  </section>
+
+  <section class="card">
+    <div class="ch"><h2>DPI</h2></div>
+    <div class="dpi">
+      <button class="bt" data-dpi="450">450</button>
+      <button class="bt" data-dpi="520">520</button>
+      <button class="bt" data-dpi="600">600</button>
+      <button class="bt" data-dpi="720">720</button>
+      <button class="bt" data-dpi="840">840</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="ch"><h2>Ficha</h2></div>
+    <pre id="ficha"></pre>
+    <div class="grid2">
+      <button class="bt" id="bCp">Copiar ficha</button>
+      <button class="bt" id="bDl">Salvar .txt</button>
+    </div>
+  </section>
+
+</main>
+
+<footer id="ft">
+  <button class="bt pri" id="bHd">Ocultar</button>
+  <button class="bt" id="bAcc">Acessibilidade</button>
+  <button class="bt" id="bOvs">Permissao</button>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var $  = function(s){ return document.querySelector(s); };
+  var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var BR = (typeof window.gold !== "undefined");
+  var KEY = "g0cfg";
+
+  var CORES = ["#00ff5a","#ff2d2d","#00b0ff","#ffd400","#ff00e6","#ffffff"];
+  var SEN = [
+    {k:"ger", n:"Geral"},
+    {k:"rd",  n:"Ponto vermelho"},
+    {k:"x2",  n:"Mira 2x"},
+    {k:"x4",  n:"Mira 4x"},
+    {k:"awm", n:"Sniper"},
+    {k:"fl",  n:"Free look"}
+  ];
+
+  var DEF = {
+    ov:false, cor:"#00ff5a", esp:2, off:2, tam:8,
+    tk:false, dy:140, ms:80, w:280, h:300, cal:false,
+    sn:{ger:90, rd:85, x2:80, x4:75, awm:60, fl:95},
+    dpi:600
+  };
+
+  var st = JSON.parse(JSON.stringify(DEF));
+
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){}
+  }
+
+  function load(){
+    try {
+      var r = localStorage.getItem(KEY);
+      if(!r) return;
+      var o = JSON.parse(r);
+      for(var k in DEF){ if(o[k] !== undefined) st[k] = o[k]; }
+      st.sn = Object.assign({}, DEF.sn, o.sn || {});
+    } catch(e){}
+  }
+
+  var tmr;
+  function toast(m){
+    var t = $("#toast");
+    t.textContent = m;
+    t.classList.add("on");
+    clearTimeout(tmr);
+    tmr = setTimeout(function(){ t.classList.remove("on"); }, 1500);
+  }
+
+  function pushOv(){
+    if(BR) window.gold.overlay(!!st.ov, st.cor, +st.esp, +st.off, +st.tam);
+  }
+
+  function pushTk(){
+    if(BR) window.gold.trick(!!st.tk, +st.dy, +st.ms, +st.w, +st.h, !!st.cal);
+  }
+
+  function ficha(){
+    return [
+      "goldarzim_0 - ficha",
+      "mira: " + (st.ov ? "on" : "off") + " | cor " + st.cor +
+        " | esp " + st.esp + " | off " + (+st.off).toFixed(1) + " | tam " + st.tam,
+      "headtrick: " + (st.tk ? "on" : "off") + " | arrasto " + st.dy +
+        " | dur " + st.ms + "ms | caixa " + st.w + "x" + st.h,
+      "sensi: " + SEN.map(function(s){ return s.n + " " + st.sn[s.k]; }).join(" | "),
+      "dpi: " + st.dpi
+    ].join("\n");
+  }
+
+  function upd(){
+    $("#bOv").textContent = st.ov ? "on" : "off";
+    $("#bOv").classList.toggle("act", !!st.ov);
+    $("#bTk").textContent = st.tk ? "on" : "off";
+    $("#bTk").classList.toggle("act", !!st.tk);
+    $("#bCal").classList.toggle("act", !!st.cal);
+    $("#bCal").textContent = st.cal ? "Calibrando..." : "Calibrar posicao";
+
+    $("#vEsp").textContent = st.esp;
+    $("#vOff").textContent = (+st.off).toFixed(1);
+    $("#vTam").textContent = st.tam;
+    $("#vDy").textContent  = st.dy + "px";
+    $("#vMs").textContent  = st.ms + "ms";
+    $("#vW").textContent   = st.w + "px";
+    $("#vH").textContent   = st.h + "px";
+
+    $("#sEsp").value = st.esp;
+    $("#sOff").value = st.off;
+    $("#sTam").value = st.tam;
+    $("#sDy").value  = st.dy;
+    $("#sMs").value  = st.ms;
+    $("#sW").value   = st.w;
+    $("#sH").value   = st.h;
+
+    $$("#sw i").forEach(function(e){ e.classList.toggle("on", e.dataset.c === st.cor); });
+    $$(".sn").forEach(function(e){
+      var k = e.dataset.k;
+      e.querySelector("b").textContent = st.sn[k];
+      e.querySelector("input").value = st.sn[k];
+    });
+    $$("[data-dpi]").forEach(function(b){
+      b.classList.toggle("act", +b.dataset.dpi === +st.dpi);
+    });
+
+    var on = !!(st.tk || st.ov);
+    $("#pX").textContent = "XIT " + (on ? "on" : "off");
+    $("#pX").classList.toggle("act", on);
+
+    $("#ficha").textContent = ficha();
+    save();
+  }
+
+  function stt(){
+    if(!BR){
+      $("#pA").textContent = "A11Y web";
+      $("#pO").textContent = "OVL web";
+      return;
+    }
+    var s = "00";
+    try { s = String(window.gold.state()); } catch(e){}
+    var o = s.charAt(0) === "1";
+    var a = s.charAt(1) === "1";
+    $("#pA").textContent = "A11Y " + (a ? "ok" : "off");
+    $("#pA").classList.toggle("act", a);
+    $("#pO").textContent = "OVL " + (o ? "ok" : "off");
+    $("#pO").classList.toggle("act", o);
+  }
+
+  function bind(id, k){
+    var e = $(id);
+    e.addEventListener("input", function(){
+      st[k] = +e.value;
+      upd();
+      pushOv();
+      pushTk();
+    });
+  }
+
+  CORES.forEach(function(c){
+    var i = document.createElement("i");
+    i.dataset.c = c;
+    i.style.background = c;
+    i.addEventListener("click", function(){
+      st.cor = c;
+      upd();
+      pushOv();
+    });
+    $("#sw").appendChild(i);
+  });
+
+  SEN.forEach(function(s){
+    var l = document.createElement("label");
+    l.className = "sl sn";
+    l.dataset.k = s.k;
+    l.innerHTML = "<span>" + s.n + "</span><input type=\"range\" min=\"0\" max=\"200\" step=\"1\"><b></b>";
+    l.querySelector("input").addEventListener("input", function(ev){
+      st.sn[s.k] = +ev.target.value;
+      upd();
+    });
+    $("#ss").appendChild(l);
+  });
+
+  bind("#sEsp", "esp");
+  bind("#sOff", "off");
+  bind("#sTam", "tam");
+  bind("#sDy",  "dy");
+  bind("#sMs",  "ms");
+  bind("#sW",   "w");
+  bind("#sH",   "h");
+
+  $("#bOv").addEventListener("click", function(){ st.ov = !st.ov; upd(); pushOv(); });
+  $("#bTk").addEventListener("click", function(){ st.tk = !st.tk; upd(); pushTk(); });
+  $("#bCal").addEventListener("click", function(){ st.cal = !st.cal; upd(); pushTk(); });
+
+  $$("[data-dpi]").forEach(function(b){
+    b.addEventListener("click", function(){ st.dpi = +b.dataset.dpi; upd(); });
+  });
+
+  $("#bCp").addEventListener("click", function(){
+    var t = $("#ficha").textContent;
+    if(BR && window.gold.copy){ window.gold.copy(t); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(
+        function(){ toast("ficha copiada"); },
+        function(){ toast("falha ao copiar"); }
+      );
+      return;
+    }
+    toast("copie manualmente");
+  });
+
+  $("#bDl").addEventListener("click", function(){
+    var t = $("#ficha").textContent;
+    if(BR && window.gold.save){ window.gold.save("goldarzim_0_ficha.txt", t); return; }
+    try {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([t], {type:"text/plain"}));
+      a.download = "goldarzim_0_ficha.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast("download");
+    } catch(e){ toast("falha ao salvar"); }
+  });
+
+  $("#bHd").addEventListener("click", function(){ if(BR) window.gold.hide(); else toast("so no app"); });
+  $("#bAcc").addEventListener("click", function(){ if(BR) window.gold.accSettings(); else toast("so no app"); });
+  $("#bOvs").addEventListener("click", function(){ if(BR) window.gold.overlaySettings(); else toast("so no app"); });
+
+  document.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
+  load();
+  upd();
+  pushOv();
+  pushTk();
+  stt();
+  setInterval(stt, 2000);
+})();
+</script>
+</body>
+</html>
+
+
+=====[ .github/workflows/build.yml ]=====
+name: build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build debug APK
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: goldarzim_0-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
